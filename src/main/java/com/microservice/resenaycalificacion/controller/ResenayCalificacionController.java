@@ -1,9 +1,13 @@
 package com.microservice.resenaycalificacion.controller;
 
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -23,42 +27,107 @@ public class ResenayCalificacionController {
     private ResenayCalificacionService service;
 
     @PostMapping
-    public ResponseEntity<?> crearResenaYCalificacion(
+    public ResponseEntity<EntityModel<ResenayCalificacion>>
+    crearResenaYCalificacion(
             @Valid @RequestBody ResenayCalificacion resena) {
+
+        ResenayCalificacion nueva =
+                service.generarResenaYCalificacion(resena);
+
+        EntityModel<ResenayCalificacion> recurso =
+                EntityModel.of(nueva);
+
+        recurso.add(linkTo(
+                methodOn(ResenayCalificacionController.class)
+                        .buscarPorId(nueva.getIdResena()))
+                .withSelfRel());
+
+        recurso.add(linkTo(
+                methodOn(ResenayCalificacionController.class)
+                        .listarResenasYCalificaciones())
+                .withRel("resenas"));
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(service.generarResenaYCalificacion(resena));
+                .body(recurso);
     }
 
     @GetMapping
-    public ResponseEntity<?> listarResenasYCalificaciones() {
+    public CollectionModel<EntityModel<ResenayCalificacion>>
+    listarResenasYCalificaciones() {
 
-        return ResponseEntity.ok(
-                service.listarResenasYCalificaciones());
+        List<EntityModel<ResenayCalificacion>> resenas =
+                service.listarResenasYCalificaciones()
+                        .stream()
+                        .map(r -> EntityModel.of(
+                                r,
+                                linkTo(methodOn(
+                                        ResenayCalificacionController.class)
+                                        .buscarPorId(r.getIdResena()))
+                                        .withSelfRel()))
+                        .collect(Collectors.toList());
+
+        return CollectionModel.of(
+                resenas,
+                linkTo(methodOn(
+                        ResenayCalificacionController.class)
+                        .listarResenasYCalificaciones())
+                        .withSelfRel());
     }
 
-    @GetMapping("buscar/{id}")
-    public ResponseEntity<?> buscarPorId(
-            @PathVariable Long id) {
+    @GetMapping("/buscar/{id}")
+    public ResponseEntity<EntityModel<ResenayCalificacion>>
+    buscarPorId(@PathVariable Long id) {
 
-        return ResponseEntity.ok(
-                service.buscarPorId(id));
+        ResenayCalificacion resena =
+                service.buscarPorId(id);
+
+        EntityModel<ResenayCalificacion> recurso =
+                EntityModel.of(resena);
+
+        recurso.add(linkTo(
+                methodOn(ResenayCalificacionController.class)
+                        .buscarPorId(id))
+                .withSelfRel());
+
+        recurso.add(linkTo(
+                methodOn(ResenayCalificacionController.class)
+                        .listarResenasYCalificaciones())
+                .withRel("resenas"));
+
+        return ResponseEntity.ok(recurso);
     }
 
-    @PutMapping("actualizar/{id}")
-    public ResponseEntity<?> actualizarResenaYCalificacion(
+    @PutMapping("/actualizar/{id}")
+    public ResponseEntity<EntityModel<ResenayCalificacion>>
+    actualizarResenaYCalificacion(
             @PathVariable Long id,
             @Valid @RequestBody ResenayCalificacion resenaActualizada) {
 
-        return ResponseEntity.ok(
+        ResenayCalificacion actualizada =
                 service.actualizarResenaYCalificacion(
                         id,
-                        resenaActualizada));
+                        resenaActualizada);
+
+        EntityModel<ResenayCalificacion> recurso =
+                EntityModel.of(actualizada);
+
+        recurso.add(linkTo(
+                methodOn(ResenayCalificacionController.class)
+                        .buscarPorId(id))
+                .withSelfRel());
+
+        recurso.add(linkTo(
+                methodOn(ResenayCalificacionController.class)
+                        .listarResenasYCalificaciones())
+                .withRel("resenas"));
+
+        return ResponseEntity.ok(recurso);
     }
 
-    @DeleteMapping("eliminar/{id}")
-    public ResponseEntity<?> eliminarResenaYCalificacion(
+    @DeleteMapping("/eliminar/{id}")
+    public ResponseEntity<String>
+    eliminarResenaYCalificacion(
             @PathVariable Long id) {
 
         service.eliminarResenaYCalificacion(id);

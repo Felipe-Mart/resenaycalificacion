@@ -21,8 +21,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "reseñasycalificaciones")
-public class ReseñayCalificacion {
+@Table(name = "resenasycalificaciones")
+public class ResenayCalificacion {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
