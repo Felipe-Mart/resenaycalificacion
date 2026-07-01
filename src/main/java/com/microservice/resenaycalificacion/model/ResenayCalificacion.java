@@ -52,7 +52,6 @@ public class ResenayCalificacion {
     @Column(nullable = false)
     private Integer calificacion;
 
-    @NotNull(message = "La fecha es obligatoria")
     @Column(nullable = false)
     private LocalDate fecha;
 }
